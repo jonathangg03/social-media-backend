@@ -1,7 +1,8 @@
 const mongoose = require('mongoose')
+const bcrypt = require('bcryptjs')
 const Schema = mongoose.Schema
 
-const UserSchema = new Schema({
+const AuthSchema = new Schema({
   email: {
     type: String,
     required: true
@@ -16,4 +17,8 @@ const UserSchema = new Schema({
   }
 })
 
-module.exports = mongoose.model('auths', UserSchema)
+AuthSchema.methods.comparePassword = function (password) {
+  return bcrypt.compare(password, this.password) //Como usamos this, no usamos AF
+}
+
+module.exports = mongoose.model('auths', AuthSchema)

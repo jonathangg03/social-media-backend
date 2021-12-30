@@ -1,10 +1,12 @@
 const express = require('express')
 const multer = require('multer')
 const path = require('path')
+const response = require('../response')
 const router = express.Router()
 const Model = require('../models/users')
 const AuthModel = require('../models/auths')
-const { host, port } = require('../config')
+const jwt = require('jsonwebtoken')
+const { host, port, secret } = require('../config')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -17,53 +19,64 @@ const upload = multer({ storage })
 
 //Enviamos un elemento a users y auths
 router.post('/', async (req, res) => {
-  try {
-    const newUser = new Model({
-      coverPhotoUrl: 'Este es un url',
-      description: req.body.description,
-      followedPeople: [],
-      likedPost: [],
-      name: req.body.name,
-      profilePhotoUrl: 'Este es un url'
-    })
+  const userVerification = await Model.findOne({ email: req.body.email })
+  if (userVerification) {
+    response.error(req, res, 500, 'Ya existe un usuario usando este correo')
+  } else {
+    try {
+      const newUser = new Model({
+        coverPhotoUrl: '',
+        description: '',
+        followedPeople: [],
+        likedPost: [],
+        name: req.body.name,
+        profilePhotoUrl: ''
+      })
+      await newUser.save()
 
-    await newUser.save()
+      const password = await newUser.hashPassword(req.body.password)
+      const newUserAuth = new AuthModel({
+        email: req.body.email,
+        password: password,
+        user: newUser._id
+      })
+      await newUserAuth.save()
 
-    const newUserAuth = new AuthModel({
-      email: req.body.email,
-      password: req.body.password,
-      user: newUser._id
-    })
-
-    await newUserAuth.save()
-    res.status(201).send(newUser)
-  } catch (error) {
-    res.status(500).send(error.message)
+      response.success(req, res, 201, newUser)
+    } catch (error) {
+      response.error(req, res, 500, error.message, error)
+    }
   }
 })
 
 //Traemos usuairos por nombre
-router.get('/', async (req, res) => {
-  try {
-    const users = await Model.find()
-    const filterUsers = users.filter((user) => {
-      if (user.name.toLowerCase().includes(req.query.name.toLowerCase())) {
-        return user
-      }
-    })
-    res.status(200).send(filterUsers)
-  } catch (error) {
-    res.status(500).send(error)
-  }
-})
+// router.get('/', async (req, res) => {
+//   try {
+//     const users = await Model.find()
+//     // const filterUsers = users.filter((user) => {
+//     //   if (user.name.toLowerCase().includes(req.query.name.toLowerCase())) {
+//     //     return user
+//     //   }
+//     // })
+//     res.status(200).send(users)
+//   } catch (error) {
+//     res.status(500).send(error)
+//   }
+// })
 
 //Traemos un usuario por medio de ID, para poder devolverlo al loguearnos
-router.get('/:userId', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const user = await Model.findById(req.params.userId)
-    res.status(200).send(user)
+    if (!req.headers.authorization) {
+      response.error(req, res, 400, 'No JWT provided')
+    }
+    const authHeader = req.headers.authorization
+    const token = authHeader.split(' ')[1]
+
+    const decodedUser = jwt.verify(token, secret)
+    response.success(req, res, 200, decodedUser.user)
   } catch (error) {
-    res.status(500).send(error)
+    response.error(req, res, 500, error.message)
   }
 })
 
