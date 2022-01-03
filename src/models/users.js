@@ -6,7 +6,6 @@ const UserSchema = new Schema({
   coverPhotoUrl: String,
   description: String,
   followedPeople: Array,
-  age: Number,
   likedPost: [
     {
       type: Schema.ObjectId,

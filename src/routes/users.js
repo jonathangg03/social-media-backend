@@ -19,7 +19,7 @@ const upload = multer({ storage })
 
 //Enviamos un elemento a users y auths
 router.post('/', async (req, res) => {
-  const userVerification = await Model.findOne({ email: req.body.email })
+  const userVerification = await AuthModel.findOne({ email: req.body.email })
   if (userVerification) {
     response.error(req, res, 500, 'Ya existe un usuario usando este correo')
   } else {
@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
 //   }
 // })
 
-//Traemos un usuario por medio de ID, para poder devolverlo al loguearnos
+//Enviamos la información de un usuario por medio del contenido del token ID
 router.get('/', async (req, res) => {
   try {
     if (!req.headers.authorization) {
