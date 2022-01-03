@@ -3,6 +3,7 @@ const multer = require('multer')
 const path = require('path')
 const router = express.Router()
 const Model = require('../models/posts')
+const response = require('../response')
 const { host, port } = require('../config')
 
 const storage = multer.diskStorage({
@@ -15,30 +16,32 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 //Traemos un post por medio de ID de usuario, para poder devolverlo al loguearnos
-router.get('/', async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    if (!req.query.user) {
+    if (!req.params.id) {
       res.status(500).send('No se ingresó un id')
     } else {
-      const userPost = await Model.find({ user: req.query.user })
-      res.status(200).send(userPost)
+      const userPost = await Model.find({
+        user: req.params.id
+      }).populate('user')
+      response.success(req, res, 200, userPost)
     }
   } catch (error) {
-    res.status(500).send(error)
+    response.error(req, res, 500, error.message)
   }
 })
 
 //Enviamos un elemento a posts
-router.post('/', upload.single('postImage'), async (req, res) => {
+router.post('/:id', upload.single('postImage'), async (req, res) => {
   try {
-    if (!req.query.user) {
+    if (!req.params.id) {
       throw Error('No se ingresó id')
     } else {
       const newPost = new Model({
         content: req.body.content,
-        imageUrl: `${host}:${port}/uploads/${req.file.originalname}`,
+        // imageUrl: `${host}:${port}/uploads/${req.file.originalname || ''}`,
         likes: [],
-        user: req.query.user,
+        user: req.params.id,
         date: new Date()
       })
 
