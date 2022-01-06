@@ -74,7 +74,8 @@ router.get('/', async (req, res) => {
     const token = authHeader.split(' ')[1]
 
     const decodedUser = jwt.verify(token, secret)
-    response.success(req, res, 200, decodedUser.user)
+    const user = await Model.findById(decodedUser.user.user._id)
+    response.success(req, res, 200, user)
   } catch (error) {
     response.error(req, res, 500, error.message)
   }
@@ -88,7 +89,7 @@ router.delete('/:userId', async (req, res) => {
     })
     res.status(200).send('El usuario fue eliminado exitosamente')
   } catch (error) {
-    res.status(500).send(error.message)
+    response.error(req, res, 500, error.message)
   }
 })
 
@@ -104,18 +105,26 @@ router.patch(
       if (user.id) {
         const { files } = req
         const { coverPhoto, profilePhoto } = files
-        if (profilePhoto[0].size) {
-          user.profilePhotoUrl = `${host}:${port}/uploads/${req.files.profilePhoto[0].originalname}`
+        if (req.body.name) {
+          user.name = req.body.name
         }
-        if (coverPhoto[0].size) {
-          user.coverPhotoUrl = `${host}:${port}/uploads/${req.files.coverPhoto[0].originalname}`
+
+        if (req.body.description) {
+          user.description = req.body.description
         }
+        if (profilePhoto) {
+          user.profilePhotoUrl = `${host}:${port}/upload/${req.files.profilePhoto[0].filename}`
+        }
+        if (coverPhoto) {
+          user.coverPhotoUrl = `${host}:${port}/upload/${req.files.coverPhoto[0].filename}`
+        }
+        user.save()
         res.status(200).send(user)
       } else {
         res.status(500).send('No se encontró usuario con ese id')
       }
     } catch (error) {
-      res.status(500).send(error.message)
+      response.error(req, res, 500, error.message)
     }
   }
 )

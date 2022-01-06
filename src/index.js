@@ -12,6 +12,7 @@ const connectDB = require('./db')
 const users = require('./routes/users')
 const auths = require('./routes/auths')
 const posts = require('./routes/posts')
+const path = require('path')
 
 //Crete DB connection and Server
 const app = express()
@@ -37,6 +38,7 @@ app.use(passport.session())
 app.use('/user', users)
 app.use('/auth', auths)
 app.use('/post', posts)
+app.use('/upload', express.static(path.join(__dirname, '../uploads')))
 
 //Port listening
 app.listen(app.get('port'), () =>
