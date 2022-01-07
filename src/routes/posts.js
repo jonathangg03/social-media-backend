@@ -37,19 +37,23 @@ router.post('/:id', upload.single('postImage'), async (req, res) => {
     if (!req.params.id) {
       throw Error('No se ingresó id')
     } else {
+      let imageUrl = ''
+      if (req.file) {
+        imageUrl = `${host}:${port}/upload/${req.file.filename}`
+      }
+
       const newPost = new Model({
         content: req.body.content,
-        // imageUrl: `${host}:${port}/uploads/${req.file.originalname || ''}`,
+        imageUrl: imageUrl,
         likes: [],
         user: req.params.id,
         date: new Date()
       })
-
       await newPost.save()
-      res.status(201).send(newPost)
+      response.success(req, res, 201, newPost)
     }
   } catch (error) {
-    res.status(500).send(error.message)
+    response.error(req, res, 500, error.message)
   }
 })
 
