@@ -4,6 +4,7 @@ const Schema = mongoose.Schema
 
 const UserSchema = new Schema({
   coverPhotoUrl: String,
+  coverPhotoId: String,
   description: String,
   followedPeople: Array,
   likedPost: [
@@ -16,7 +17,8 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
-  profilePhotoUrl: String
+  profilePhotoUrl: String,
+  profilePhotoId: String
 })
 
 UserSchema.methods.hashPassword = (password) => {

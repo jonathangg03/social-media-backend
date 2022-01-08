@@ -3,9 +3,10 @@ const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
+const cloudinary = require('cloudinary')
 
 //Configurations
-const { port, dbUri, secret } = require('./config')
+const { port, dbUri, secret, cloudinary: cloud } = require('./config')
 const connectDB = require('./db')
 
 //Routes
@@ -33,6 +34,12 @@ app.use(
 )
 app.use(passport.initialize())
 app.use(passport.session())
+
+cloudinary.v2.config({
+  cloud_name: cloud.name,
+  api_key: cloud.api_key,
+  api_secret: cloud.api_secret
+})
 
 //Configure routes
 app.use('/user', users)

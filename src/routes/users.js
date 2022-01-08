@@ -1,11 +1,13 @@
 const express = require('express')
 const multer = require('multer')
+const cloudinary = require('cloudinary')
+const jwt = require('jsonwebtoken')
 const path = require('path')
+const fs = require('fs')
 const response = require('../response')
 const router = express.Router()
 const Model = require('../models/users')
 const AuthModel = require('../models/auths')
-const jwt = require('jsonwebtoken')
 const { host, port, secret } = require('../config')
 
 const storage = multer.diskStorage({
@@ -26,11 +28,13 @@ router.post('/', async (req, res) => {
     try {
       const newUser = new Model({
         coverPhotoUrl: '',
+        coverPhotoId: '',
         description: '',
         followedPeople: [],
         likedPost: [],
         name: req.body.name,
-        profilePhotoUrl: ''
+        profilePhotoUrl: '',
+        profilePhotoId: ''
       })
       await newUser.save()
 
@@ -102,9 +106,11 @@ router.patch(
   async (req, res) => {
     try {
       const user = await Model.findById(req.params.userId)
-      if (user.id) {
+
+      if (user._id) {
         const { files } = req
         const { coverPhoto, profilePhoto } = files
+
         if (req.body.name) {
           user.name = req.body.name
         }
@@ -112,13 +118,57 @@ router.patch(
         if (req.body.description) {
           user.description = req.body.description
         }
+
         if (profilePhoto) {
-          user.profilePhotoUrl = `${host}:${port}/upload/${req.files.profilePhoto[0].filename}`
+          if (user.profilePhotoId) {
+            await cloudinary.v2.uploader.destroy(user.profilePhotoId)
+          }
+          const cloudUpload = await cloudinary.v2.uploader.upload(
+            `${__dirname}/../../uploads/${profilePhoto[0].filename}`
+          )
+
+          user.profilePhotoUrl = cloudUpload.url
+          user.profilePhotoId = cloudUpload.public_id
         }
+
         if (coverPhoto) {
-          user.coverPhotoUrl = `${host}:${port}/upload/${req.files.coverPhoto[0].filename}`
+          if (user.coverPhotoId) {
+            await cloudinary.v2.uploader.destroy(user.coverPhotoId)
+          }
+          const cloudUpload = await cloudinary.v2.uploader.upload(
+            `${__dirname}/../../uploads/${coverPhoto[0].filename}`
+          )
+          user.coverPhotoUrl = cloudUpload.url
+          user.coverPhotoId = cloudUpload.public_id
         }
-        user.save()
+
+        await user.save()
+
+        if (profilePhoto) {
+          fs.unlink(
+            `${__dirname}/../../uploads/${profilePhoto[0].filename}`,
+            (error) => {
+              if (error) {
+                console.log(error)
+              } else {
+                console.log('Imagen eliminada')
+              }
+            }
+          )
+        }
+
+        if (coverPhoto) {
+          fs.unlink(
+            `${__dirname}/../../uploads/${coverPhoto[0].filename}`,
+            (error) => {
+              if (error) {
+                console.log(error)
+              } else {
+                console.log('Imagen eliminada')
+              }
+            }
+          )
+        }
         res.status(200).send(user)
       } else {
         res.status(500).send('No se encontró usuario con ese id')
