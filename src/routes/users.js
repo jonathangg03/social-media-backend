@@ -70,15 +70,40 @@ router.post('/', async (req, res) => {
 
 //Enviamos la información de un usuario por medio del contenido del token ID
 router.get('/', async (req, res) => {
-  try {
-    if (!req.headers.authorization) {
-      response.error(req, res, 400, 'No JWT provided')
-    }
-    const authHeader = req.headers.authorization
-    const token = authHeader.split(' ')[1]
+  if (req.query.getProfile) {
+    try {
+      if (!req.headers.authorization) {
+        response.error(req, res, 400, 'No JWT provided')
+      }
+      const authHeader = req.headers.authorization
+      const token = authHeader.split(' ')[1]
 
-    const decodedUser = jwt.verify(token, secret)
-    const user = await Model.findById(decodedUser.user.user._id)
+      const decodedUser = jwt.verify(token, secret)
+      const user = await Model.findById(decodedUser.user.user._id)
+      response.success(req, res, 200, user)
+    } catch (error) {
+      response.error(req, res, 500, error.message)
+    }
+  }
+  if (req.query.name) {
+    try {
+      const name = req.query.name.toLowerCase()
+      const users = await Model.find()
+      const filterUsers = users.filter((user) => {
+        if (user.name.toLowerCase().includes(name)) {
+          return user
+        }
+      })
+      response.success(req, res, 200, filterUsers)
+    } catch (error) {
+      response.error(req, res, 500, error.message)
+    }
+  }
+})
+
+router.get('/:id', async (req, res) => {
+  try {
+    const user = await Model.findById(req.params.id)
     response.success(req, res, 200, user)
   } catch (error) {
     response.error(req, res, 500, error.message)

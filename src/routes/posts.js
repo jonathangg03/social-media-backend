@@ -1,10 +1,11 @@
 const express = require('express')
 const multer = require('multer')
+const cloudinary = require('cloudinary')
 const path = require('path')
+const fs = require('fs')
 const router = express.Router()
 const Model = require('../models/posts')
 const response = require('../response')
-const { host, port } = require('../config')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -23,7 +24,9 @@ router.get('/:id', async (req, res) => {
     } else {
       const userPost = await Model.find({
         user: req.params.id
-      }).populate('user')
+      })
+        .populate('user')
+        .sort({ date: -1 })
       response.success(req, res, 200, userPost)
     }
   } catch (error) {
@@ -38,13 +41,26 @@ router.post('/:id', upload.single('postImage'), async (req, res) => {
       throw Error('No se ingresó id')
     } else {
       let imageUrl = ''
+      let imageId = ''
       if (req.file) {
-        imageUrl = `${host}:${port}/upload/${req.file.filename}`
+        const fileDirection = `${__dirname}/../../uploads/${req.file.filename}`
+        const cloudUpload = await cloudinary.v2.uploader.upload(fileDirection)
+        imageUrl = cloudUpload.url
+        imageId = cloudUpload.public_id
+
+        fs.unlink(fileDirection, (error) => {
+          if (error) {
+            console.log(error)
+          } else {
+            console.log('Image of post deleted from server')
+          }
+        })
       }
 
       const newPost = new Model({
         content: req.body.content,
         imageUrl: imageUrl,
+        imageId: imageId,
         likes: [],
         user: req.params.id,
         date: new Date()

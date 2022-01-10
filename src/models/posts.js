@@ -7,6 +7,7 @@ const UserSchema = new Schema({
     required: true
   },
   imageUrl: String,
+  imageId: String,
   likes: [
     {
       type: Schema.ObjectId,
