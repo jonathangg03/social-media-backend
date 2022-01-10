@@ -53,21 +53,6 @@ router.post('/', async (req, res) => {
   }
 })
 
-//Traemos usuairos por nombre
-// router.get('/', async (req, res) => {
-//   try {
-//     const users = await Model.find()
-//     // const filterUsers = users.filter((user) => {
-//     //   if (user.name.toLowerCase().includes(req.query.name.toLowerCase())) {
-//     //     return user
-//     //   }
-//     // })
-//     res.status(200).send(users)
-//   } catch (error) {
-//     res.status(500).send(error)
-//   }
-// })
-
 //Enviamos la información de un usuario por medio del contenido del token ID
 router.get('/', async (req, res) => {
   if (req.query.getProfile) {
