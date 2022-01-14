@@ -189,4 +189,31 @@ router.patch(
   }
 )
 
+router.patch('/', async (req, res) => {
+  try {
+    if (req.body.userId && req.body.toFollow) {
+      const user = await Model.findById(req.body.userId)
+      const validationUser = user.followedPeople.find(
+        (el) => el.toString() === req.body.toFollow
+      )
+      if (!validationUser) {
+        user.followedPeople.push(req.body.toFollow)
+        user.save()
+        response.success(req, res, 200, user.followedPeople)
+      } else {
+        const newFollowed = user.followedPeople.filter(
+          (el) => el.toString() !== req.body.toFollow
+        )
+        user.followedPeople = newFollowed
+        user.save()
+        response.success(req, res, 200, user.followedPeople)
+      }
+    } else {
+      response.error(req, res, 500, 'No id sended')
+    }
+  } catch (error) {
+    response.error(req, res, 500, error.message)
+  }
+})
+
 module.exports = router
