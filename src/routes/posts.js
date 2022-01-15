@@ -5,6 +5,7 @@ const path = require('path')
 const fs = require('fs')
 const router = express.Router()
 const Model = require('../models/posts')
+const UserModel = require('../models/users')
 const response = require('../response')
 
 const storage = multer.diskStorage({
@@ -28,6 +29,28 @@ router.get('/:id', async (req, res) => {
         .populate('user')
         .sort({ date: -1 })
       response.success(req, res, 200, userPost)
+    }
+  } catch (error) {
+    response.error(req, res, 500, error.message)
+  }
+})
+
+//Get ideas of followed people
+router.get('/', async (req, res) => {
+  try {
+    if (!req.query.userId) {
+      res.status(500).send('No se ingresó un id')
+    } else {
+      const userPost = await Model.find().populate('user').sort({ date: -1 })
+      const user = await UserModel.findById(req.query.userId)
+
+      const postToShow = userPost.filter((post) => {
+        if (user.followedPeople.includes(post.user._id)) {
+          return post
+        }
+      })
+
+      response.success(req, res, 200, postToShow)
     }
   } catch (error) {
     response.error(req, res, 500, error.message)

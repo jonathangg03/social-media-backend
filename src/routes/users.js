@@ -197,10 +197,12 @@ router.patch('/', async (req, res) => {
         (el) => el.toString() === req.body.toFollow
       )
       if (!validationUser) {
+        //Follow
         user.followedPeople.push(req.body.toFollow)
         user.save()
         response.success(req, res, 200, user.followedPeople)
       } else {
+        //unfollow
         const newFollowed = user.followedPeople.filter(
           (el) => el.toString() !== req.body.toFollow
         )
