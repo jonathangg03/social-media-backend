@@ -12,12 +12,7 @@ const UserSchema = new Schema({
       ref: 'users'
     }
   ],
-  likedPost: [
-    {
-      type: Schema.ObjectId,
-      ref: 'posts'
-    }
-  ],
+  likedPost: Array,
   name: {
     type: String,
     required: true

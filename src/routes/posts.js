@@ -23,12 +23,23 @@ router.get('/:id', async (req, res) => {
     if (!req.params.id) {
       res.status(500).send('No se ingresó un id')
     } else {
-      const userPost = await Model.find({
-        user: req.params.id
-      })
-        .populate('user')
-        .sort({ date: -1 })
-      response.success(req, res, 200, userPost)
+      if (!req.query.getLiked) {
+        const userPost = await Model.find({
+          user: req.params.id
+        })
+          .populate('user')
+          .sort({ date: -1 })
+        response.success(req, res, 200, userPost)
+      } else {
+        const post = await Model.find().populate('user').sort({ date: -1 })
+        const user = await UserModel.findById(req.params.id)
+        const finalPost = post.filter((posted) => {
+          if (user.likedPost.includes(posted._id.toString())) {
+            return posted
+          }
+        })
+        response.success(req, res, 200, finalPost)
+      }
     }
   } catch (error) {
     response.error(req, res, 500, error.message)
@@ -102,11 +113,23 @@ router.patch('/:postId', upload.single('postImage'), async (req, res) => {
       throw Error('No se ingresó id')
     } else {
       const post = await Model.findById(req.params.postId)
-
-      post.likes.push(!req.query.user)
-      post.save()
-      await newPost.save()
-      res.status(201).send(newPost)
+      const user = await UserModel.findById(req.query.user)
+      if (post.likes.includes(req.query.user)) {
+        //Delete like
+        const newArray = post.likes.filter((like) => like !== req.query.user)
+        const newLikedPost = user.likedPost.filter(
+          (postLiked) => post._id.toString() !== postLiked
+        )
+        post.likes = newArray
+        user.likedPost = newLikedPost
+      } else {
+        //Add like
+        post.likes.push(req.query.user)
+        user.likedPost.push(req.params.postId)
+      }
+      await post.save()
+      await user.save()
+      res.status(201).send(post)
     }
   } catch (error) {
     res.status(500).send(error.message)
