@@ -97,7 +97,7 @@ router.post('/:id', upload.single('postImage'), async (req, res) => {
         imageId: imageId,
         likes: [],
         user: req.params.id,
-        date: new Date()
+        date: Date.now()
       })
       await newPost.save()
       response.success(req, res, 201, newPost)
@@ -133,6 +133,15 @@ router.patch('/:postId', upload.single('postImage'), async (req, res) => {
     }
   } catch (error) {
     res.status(500).send(error.message)
+  }
+})
+
+router.delete('/:id', async (req, res) => {
+  try {
+    await Model.findByIdAndRemove(req.params.id)
+    response.success(req, res, 200, 'Se eliminó el registro correctamente')
+  } catch (error) {
+    response.error(req, res, 500, 'No se pudo eliminar el registro')
   }
 })
 

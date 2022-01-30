@@ -14,7 +14,7 @@ const UserSchema = new Schema({
     ref: 'users'
   },
   date: {
-    type: Date,
+    type: Number,
     required: true
   }
 })
