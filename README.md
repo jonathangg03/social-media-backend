@@ -1,7 +1,7 @@
 # Miriio
 
 Miriio es una pequeña red social y PWA con la que los usuarios podrán compartir
-ideas e indicar cuales les han gustado.
+ideas e indicar cuáles les han gustado.
 
 ## Backend
 
@@ -12,16 +12,16 @@ El backend de este sitio lo puedes ver en este
 
 - Al ingresar a la aplicación, debes iniciar sesión sí ya tienes una cuenta, o
   registrarte en caso contrario.
-- Una vez ingresaste, estaras en la sección de inicio, donde podras ver las
+- Una vez ingresaste, estarás en la sección de inicio, donde podrás ver las
   publicaciones de las personas que sigues.
 - Para desplazarte por las diferentes secciones, se usa el menú que estará abajo
-  sí estas con la vista para moviles, o a la derecha en la vista de escritorio.
+  sí estas con la vista para móviles, o a la derecha en la vista de escritorio.
 - La siguiente sección (icono de corazón) muestra las publicaciones que te han
   gustado.
-- Dando clic en el icono (+), podras agregar una nueva publicación, a la cual se
+- Dando clic en el icono (+), podrás agregar una nueva publicación, a la cual se
   le puede agregar una imagen. Sí estas desde la vista de escritorio, puedes
   arrastrar una imagen desde el gestor de archivos.
-- Con la lupa, podras buscar algun usuario dentro de la aplicación, y sí deseas,
+- Con la lupa, puedes buscar algún usuario dentro de la aplicación, y sí deseas,
   ingresar a tu perfil o seguirlo.
 - Finalmente, está la sección de perfil, donde puedes ver tu perfil, y las
   publicaciones que hiciste.
@@ -29,7 +29,7 @@ El backend de este sitio lo puedes ver en este
   cerrar sesión.
 - Tu perfil puede tener una foto de portada y de perfil, tu nombre y una
   descripción.
-- Al ser una PWA, en la barra de busqueda del navegador aparecerá la opción de
+- Al ser una PWA, en la barra de búsqueda del navegador aparecerá la opción de
   sí deseas instalar la aplicación.
 
 ## Tecnologías usadas
