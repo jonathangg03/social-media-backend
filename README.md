@@ -1,47 +1,30 @@
-# Miriio
+# Miriio - Red social.
 
-Miriio es una pequeña red social y PWA con la que los usuarios podrán compartir
-ideas e indicar cuáles les han gustado.
+Miriio es una pequeña red social y PWA para que los usuarios compartan las ideas
+que desean. Puedes ver la aplicación [aquí](https://miriio.vercel.app/ 'aquí').
 
-## Backend
+[![Miriio](https://dav-dev.com/assets/projects/miriio.jpg 'Miriio')](https://dav-dev.com/assets/projects/miriio.jpg 'Miriio')
 
-El backend de este sitio lo puedes ver en este
-[repositorio](https://github.com/jonathangg03/social-media-backend 'repositorio').
+## Frontend
 
-## Instrucciones de uso
+El frontend de este sitio lo puedes ver en este
+[repositorio](https://github.com/jonathangg03/social-media-frontend 'repositorio').
 
-- Al ingresar a la aplicación, debes iniciar sesión sí ya tienes una cuenta, o
-  registrarte en caso contrario.
-- Una vez ingresaste, estarás en la sección de inicio, donde podrás ver las
-  publicaciones de las personas que sigues.
-- Para desplazarte por las diferentes secciones, se usa el menú que estará abajo
-  sí estas con la vista para móviles, o a la derecha en la vista de escritorio.
-- La siguiente sección (icono de corazón) muestra las publicaciones que te han
-  gustado.
-- Dando clic en el icono (+), podrás agregar una nueva publicación, a la cual se
-  le puede agregar una imagen. Sí estas desde la vista de escritorio, puedes
-  arrastrar una imagen desde el gestor de archivos.
-- Con la lupa, puedes buscar algún usuario dentro de la aplicación, y sí deseas,
-  ingresar a tu perfil o seguirlo.
-- Finalmente, está la sección de perfil, donde puedes ver tu perfil, y las
-  publicaciones que hiciste.
-- En tu portada, estará el signo de menú, donde puedes actualizar tu perfil o
-  cerrar sesión.
-- Tu perfil puede tener una foto de portada y de perfil, tu nombre y una
-  descripción.
-- Al ser una PWA, en la barra de búsqueda del navegador aparecerá la opción de
-  sí deseas instalar la aplicación.
+## Resumen
 
-## Tecnologías usadas
+Esta es la API REST, que va a manejar todos los datos enviados por el frontend.
+Vamos a almacenarlos en una Base de datos de MongoDB.
 
-- JavaScript.
-- React.js.
-- Node.js.
-- Express.js.
-- React Router DOM
-- React Helmet (SEO).
-- Cloudinary.
-- Heroku.
-- MongoDB.
-- Vercel.
-- Wepack PWA Manifest y Workbox Webpack Plugin para la PWA.
+## Correr aplicación en local
+
+- Debes clonar este repositorio.
+- Abrir una terminal e ingresar a la carpeta creada.
+- Instalar las dependencias con el comando "npm install".
+- Renombrar el archivo ".env.example" por ".env". Colocar los valores a las
+  variables de entorno, en este caso sería el puerto en el que correrá este
+  servidor en local (3001, pero puede ser cualquiera), la URI de nuestra Base de
+  datos, el host (localhost), el "secret" o contraseña para el codificado de
+  algunos elementos.
+- Crear una cuenta en Cloudinary, y llenar las variables de entorno
+  correspondientes. Este es un servicio para almacenar imagenes.
+- Iniciar el proyecto con el comando "npm run dev".
