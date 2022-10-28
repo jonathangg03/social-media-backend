@@ -3,7 +3,7 @@
 Miriio es una pequeña red social y PWA para que los usuarios compartan las ideas
 que desean. Puedes ver la aplicación [aquí](https://miriio.vercel.app/ 'aquí').
 
-[![Miriio](https://dav-dev.com/assets/projects/miriio.jpg 'Miriio')](https://dav-dev.com/assets/projects/miriio.jpg 'Miriio')
+[![Miriio](https://res.cloudinary.com/dklpyhteh/image/upload/v1661742489/Portfolio/miriio_qn4y7e.png 'Miriio')](https://res.cloudinary.com/dklpyhteh/image/upload/v1661742489/Portfolio/miriio_qn4y7e.png 'Miriio')
 
 ## Frontend
 
