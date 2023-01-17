@@ -1,6 +1,6 @@
 const response = require('../response')
 
-const error = (error, req, res, next) => {
+const errors = (error, req, res, next) => {
   console.log('Enter boom 1')
 
   if (error.isBoom) {
@@ -16,4 +16,4 @@ const error = (error, req, res, next) => {
   next()
 }
 
-module.exports = error
+module.exports = errors
