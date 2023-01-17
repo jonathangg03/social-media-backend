@@ -6,7 +6,7 @@ exports.success = (req, res, code, body) => {
 }
 
 exports.error = (req, res, code, body, message) => {
-  console.error(message || body)
+  console.error(message)
   res.status(code).send({
     statusCode: code,
     error: body

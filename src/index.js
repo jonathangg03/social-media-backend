@@ -4,6 +4,7 @@ const cors = require('cors')
 const session = require('express-session')
 const passport = require('passport')
 const cloudinary = require('cloudinary')
+const errors = require('./middlewares/errors')
 
 //Configurations
 const { port, dbUri, secret, cloudinary: cloud } = require('./config')
@@ -46,6 +47,9 @@ app.use('/user', users)
 app.use('/auth', auths)
 app.use('/post', posts)
 app.use('/upload', express.static(path.join(__dirname, '../uploads')))
+
+//middlewares
+app.use(errors)
 
 //Port listening
 app.listen(app.get('port'), () =>

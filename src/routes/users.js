@@ -7,8 +7,9 @@ const fs = require('fs')
 const response = require('../response')
 const router = express.Router()
 const Model = require('../models/users')
+const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
-const { host, port, secret } = require('../config')
+const { secret } = require('../config')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -22,22 +23,30 @@ const upload = multer({ storage })
 //Enviamos un elemento a users y auths
 router.post('/', async (req, res) => {
   const userVerification = await AuthModel.findOne({ email: req.body.email })
+  console.log(userVerification)
   if (userVerification) {
-    response.error(req, res, 500, 'Ya existe un usuario usando este correo')
+    res.status(422).send('User already exists')
   } else {
+    let newUser = {}
     try {
-      const newUser = new Model({
+      newUser = new Model({
         coverPhotoUrl: '',
         coverPhotoId: '',
         description: '',
         followedPeople: [],
         likedPost: [],
-        name: req.body.name,
+        name: 2,
         profilePhotoUrl: '',
         profilePhotoId: ''
       })
+      //Create user
       await newUser.save()
+    } catch (error) {
+      boom.internal('Internal error server creating user.')
+    }
 
+    try {
+      //Create Auth user
       const password = await newUser.hashPassword(req.body.password)
       const newUserAuth = new AuthModel({
         email: req.body.email,
@@ -45,11 +54,10 @@ router.post('/', async (req, res) => {
         user: newUser._id
       })
       await newUserAuth.save()
-
-      response.success(req, res, 201, newUser)
     } catch (error) {
-      response.error(req, res, 500, error.message, error)
+      boom.internal('Internal error server creating auth user')
     }
+    response.success(req, res, 201, newUser)
   }
 })
 

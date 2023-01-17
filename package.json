@@ -10,6 +10,7 @@
   "author": "Jonathan García <jona03g97@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@hapi/boom": "^10.0.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^1.27.0",
     "cors": "^2.8.5",
