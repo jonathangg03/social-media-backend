@@ -21,57 +21,61 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 const validate = async (email) => {
+  if (!email) {
+    throw boom.badData('No email was sended')
+  }
+  let userVerification
+
   try {
-    const userVerification = await AuthModel.findOne({ email })
-    if (userVerification.email) {
-      boom.internal('Correo electrónico ya existe')
-    } else {
-      return false
-    }
-  } catch (error) {
-    boom.internal('Correo electrónico ya existe')
+    userVerification = await AuthModel.findOne({ email })
+  } catch {
+    throw boom.internal('Internal error validating user')
+  }
+
+  if (userVerification.email) {
+    throw boom.badData('Correo electrónico ya existe')
   }
 }
 
 //Enviamos un elemento a users y auths
-router.post('/', async (req, res) => {
+router.post('/', async (req, res, next) => {
   try {
     await validate(req.body.email)
   } catch (error) {
-    boom.internal('Correo electrónico ya existe')
+    next(error)
   }
 
-  let newUser = {}
-  try {
-    newUser = new Model({
-      coverPhotoUrl: '',
-      coverPhotoId: '',
-      description: '',
-      followedPeople: [],
-      likedPost: [],
-      name: 2,
-      profilePhotoUrl: '',
-      profilePhotoId: ''
-    })
-    //Create user
-    // await newUser.save()
-  } catch (error) {
-    boom.internal('Internal error server creating user.')
-  }
+  // let newUser = {}
+  // try {
+  //   newUser = new Model({
+  //     coverPhotoUrl: '',
+  //     coverPhotoId: '',
+  //     description: '',
+  //     followedPeople: [],
+  //     likedPost: [],
+  //     name: req.body.name,
+  //     profilePhotoUrl: '',
+  //     profilePhotoId: ''
+  //   })
+  //   //Create user
+  //   // await newUser.save()
+  // } catch (error) {
+  //   boom.internal('Internal error server creating user.')
+  // }
 
-  try {
-    //Create Auth user
-    const password = await newUser.hashPassword(req.body.password)
-    const newUserAuth = new AuthModel({
-      email: req.body.email,
-      password: password,
-      user: newUser._id
-    })
-    // await newUserAuth.save()
-  } catch (error) {
-    boom.internal('Internal error server creating auth user')
-  }
-  response.success(req, res, 201, newUser)
+  // try {
+  //   //Create Auth user
+  //   const password = await newUser.hashPassword(req.body.password)
+  //   const newUserAuth = new AuthModel({
+  //     email: req.body.email,
+  //     password: password,
+  //     user: newUser._id
+  //   })
+  //   // await newUserAuth.save()
+  // } catch (error) {
+  //   boom.internal('Internal error server creating auth user')
+  // }
+  // response.success(req, res, 201, newUser)
 })
 
 //Enviamos la información de un usuario por medio del contenido del token ID
@@ -107,12 +111,21 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.get('/:id', async (req, res) => {
+const getOneUser = async ({ id }) => {
+  const user = await Model.findById(id)
+  if (!user) {
+    throw boom.badData('No user founded')
+  }
+  return user
+}
+
+router.get('/:id', async (req, res, next) => {
   try {
-    const user = await Model.findById(req.params.id)
+    const user = await getOneUser({ id: req.params.id })
     response.success(req, res, 200, user)
   } catch (error) {
-    response.error(req, res, 500, error.message)
+    // response.error(req, res, 500, error.message)
+    next(error)
   }
 })
 
