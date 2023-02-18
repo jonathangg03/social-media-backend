@@ -9,6 +9,7 @@ const router = express.Router()
 const Model = require('../models/users')
 const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
+const { createUser } = require('../services/users')
 const { secret } = require('../config')
 
 const storage = multer.diskStorage({
@@ -20,62 +21,16 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage })
 
-const validate = async (email) => {
-  if (!email) {
-    throw boom.badData('No email was sended')
-  }
-  let userVerification
-
-  try {
-    userVerification = await AuthModel.findOne({ email })
-  } catch {
-    throw boom.internal('Internal error validating user')
-  }
-
-  if (userVerification.email) {
-    throw boom.badData('Correo electrónico ya existe')
-  }
-}
-
 //Enviamos un elemento a users y auths
 router.post('/', async (req, res, next) => {
   try {
-    await validate(req.body.email)
+    const { body } = req
+    const { name, email, password } = body
+    const newUser = await createUser({ name, email, password })
+    response.success(req, res, 201, newUser)
   } catch (error) {
     next(error)
   }
-
-  // let newUser = {}
-  // try {
-  //   newUser = new Model({
-  //     coverPhotoUrl: '',
-  //     coverPhotoId: '',
-  //     description: '',
-  //     followedPeople: [],
-  //     likedPost: [],
-  //     name: req.body.name,
-  //     profilePhotoUrl: '',
-  //     profilePhotoId: ''
-  //   })
-  //   //Create user
-  //   // await newUser.save()
-  // } catch (error) {
-  //   boom.internal('Internal error server creating user.')
-  // }
-
-  // try {
-  //   //Create Auth user
-  //   const password = await newUser.hashPassword(req.body.password)
-  //   const newUserAuth = new AuthModel({
-  //     email: req.body.email,
-  //     password: password,
-  //     user: newUser._id
-  //   })
-  //   // await newUserAuth.save()
-  // } catch (error) {
-  //   boom.internal('Internal error server creating auth user')
-  // }
-  // response.success(req, res, 201, newUser)
 })
 
 //Enviamos la información de un usuario por medio del contenido del token ID
