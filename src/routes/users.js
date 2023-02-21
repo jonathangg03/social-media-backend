@@ -8,7 +8,12 @@ const router = express.Router()
 const Model = require('../models/users')
 const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
-const { createUser, getUsers, getOneUser } = require('../services/users')
+const {
+  createUser,
+  getUsers,
+  getOneUser,
+  deleteUser
+} = require('../services/users')
 const { secret } = require('../config')
 
 const storage = multer.diskStorage({
@@ -59,11 +64,10 @@ router.get('/:id', async (req, res, next) => {
 })
 
 router.delete('/:userId', async (req, res) => {
+  const id = req.params.userId
   try {
-    await Model.findByIdAndDelete(req.params.userId)
-    await AuthModel.deleteOne({
-      user: req.params.userId
-    })
+    const deletedUser = await deleteUser({ id })
+    console.log(`User ${deletedUser._id} has been deleted`)
     res.status(200).send('El usuario fue eliminado exitosamente')
   } catch (error) {
     response.error(req, res, 500, error.message)

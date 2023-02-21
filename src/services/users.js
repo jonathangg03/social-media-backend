@@ -118,8 +118,24 @@ const getOneUser = async ({ id }) => {
   return user
 }
 
+const deleteUser = async ({ id }) => {
+  if (!id) {
+    throw boom.badData('No user specified to be deleted')
+  }
+  try {
+    const deletedUser = await UserModel.findByIdAndDelete(id)
+    await AuthModel.deleteOne({
+      user: id
+    })
+    return deletedUser
+  } catch (error) {
+    throw boom.internal('Internal error deleting user')
+  }
+}
+
 module.exports = {
   createUser,
   getUsers,
-  getOneUser
+  getOneUser,
+  deleteUser
 }
