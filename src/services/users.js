@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken')
 const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
 const UserModel = require('../models/users')
@@ -62,6 +63,63 @@ const createUser = async ({ name, email, password }) => {
   return newUser
 }
 
+const getUsers = async ({ authHeader, nameQuery, getAllUsers }) => {
+  if (authHeader) {
+    try {
+      const token = authHeader.split(' ')[1]
+      const decodedUser = jwt.verify(token, secret)
+      const user = await Model.findById(decodedUser.user.user._id)
+      return user
+    } catch (error) {
+      throw boom.internal('Internal error server getting auth user')
+    }
+  }
+
+  if (nameQuery) {
+    try {
+      const name = nameQuery.toLowerCase()
+      const users = await UserModel.find()
+      const filteredUsers = users.filter((user) => {
+        if (user.name.toLowerCase().includes(name)) {
+          return user
+        }
+      })
+
+      /*
+        ? IT HAS TO BE IMPROVED, WE CAN'T BRING ALL USERS EVERY TIME
+      */
+      return filteredUsers
+    } catch (error) {
+      throw boom.internal('Internal error server getting users')
+    }
+  }
+
+  if (getAllUsers) {
+    //Mostly used for developing
+    const users = await UserModel.find()
+    return users
+  }
+
+  throw boom.badRequest(
+    'Bad request. Please, send a name or an Authorization Header'
+  )
+}
+
+const getOneUser = async ({ id }) => {
+  let user = {}
+  try {
+    user = await UserModel.findById(id)
+  } catch (error) {
+    throw boom.internal('Internal error finding user')
+  }
+  if (!user) {
+    throw boom.badData('No user founded')
+  }
+  return user
+}
+
 module.exports = {
-  createUser
+  createUser,
+  getUsers,
+  getOneUser
 }

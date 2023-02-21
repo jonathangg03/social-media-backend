@@ -1,7 +1,6 @@
 const express = require('express')
 const multer = require('multer')
 const cloudinary = require('cloudinary')
-const jwt = require('jsonwebtoken')
 const path = require('path')
 const fs = require('fs')
 const response = require('../response')
@@ -9,7 +8,7 @@ const router = express.Router()
 const Model = require('../models/users')
 const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
-const { createUser } = require('../services/users')
+const { createUser, getUsers, getOneUser } = require('../services/users')
 const { secret } = require('../config')
 
 const storage = multer.diskStorage({
@@ -33,53 +32,28 @@ router.post('/', async (req, res, next) => {
   }
 })
 
-//Enviamos la información de un usuario por medio del contenido del token ID
-router.get('/', async (req, res) => {
-  if (req.query.getProfile) {
-    try {
-      if (!req.headers.authorization) {
-        response.error(req, res, 400, 'No JWT provided')
-      }
-      const authHeader = req.headers.authorization
-      const token = authHeader.split(' ')[1]
-
-      const decodedUser = jwt.verify(token, secret)
-      const user = await Model.findById(decodedUser.user.user._id)
-      response.success(req, res, 200, user)
-    } catch (error) {
-      response.error(req, res, 500, error.message)
-    }
-  }
-  if (req.query.name) {
-    try {
-      const name = req.query.name.toLowerCase()
-      const users = await Model.find()
-      const filterUsers = users.filter((user) => {
-        if (user.name.toLowerCase().includes(name)) {
-          return user
-        }
-      })
-      response.success(req, res, 200, filterUsers)
-    } catch (error) {
-      response.error(req, res, 500, error.message)
-    }
+//We send to the requester the user information by token id
+router.get('/', async (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization
+      ? req.headers.authorization
+      : null
+    const nameQuery = req.query.name ? req.query.name : null
+    console.log(req.params)
+    const getAllUsers = req.query.getAllUsers ? true : false
+    const users = await getUsers({ authHeader, nameQuery, getAllUsers })
+    response.success(req, res, 200, users)
+  } catch (error) {
+    next(error)
   }
 })
 
-const getOneUser = async ({ id }) => {
-  const user = await Model.findById(id)
-  if (!user) {
-    throw boom.badData('No user founded')
-  }
-  return user
-}
-
 router.get('/:id', async (req, res, next) => {
+  const { id } = req.params
   try {
-    const user = await getOneUser({ id: req.params.id })
+    const user = await getOneUser({ id })
     response.success(req, res, 200, user)
   } catch (error) {
-    // response.error(req, res, 500, error.message)
     next(error)
   }
 })
