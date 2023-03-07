@@ -171,10 +171,80 @@ const followPeople = async ({ userId, toFollow }) => {
   }
 }
 
+const upadateProfile = async ({ userId, name, description, files }) => {
+  try {
+    const user = await getOneUser({ id: userId })
+    const { coverPhoto, profilePhoto } = files
+
+    if (name) {
+      user.name = name
+    }
+
+    if (description) {
+      user.description = description
+    }
+
+    if (profilePhoto) {
+      if (user.profilePhotoId) {
+        await cloudinary.v2.uploader.destroy(user.profilePhotoId) //Delete profilePhoto if already exists
+      }
+      const cloudUpload = await cloudinary.v2.uploader.upload(
+        `${__dirname}/../../uploads/${profilePhoto[0].filename}`
+      )
+
+      user.profilePhotoUrl = cloudUpload.url
+      user.profilePhotoId = cloudUpload.public_id
+    }
+
+    if (coverPhoto) {
+      if (user.coverPhotoId) {
+        await cloudinary.v2.uploader.destroy(user.coverPhotoId) //Delete profilePhoto if already exists
+      }
+      const cloudUpload = await cloudinary.v2.uploader.upload(
+        `${__dirname}/../../uploads/${coverPhoto[0].filename}`
+      )
+      user.coverPhotoUrl = cloudUpload.url
+      user.coverPhotoId = cloudUpload.public_id
+    }
+
+    await user.save()
+
+    if (profilePhoto) {
+      fs.unlink(
+        `${__dirname}/../../uploads/${profilePhoto[0].filename}`,
+        (error) => {
+          if (error) {
+            console.log(error)
+          } else {
+            console.log('Imagen eliminada')
+          }
+        }
+      )
+    }
+
+    if (coverPhoto) {
+      fs.unlink(
+        `${__dirname}/../../uploads/${coverPhoto[0].filename}`,
+        (error) => {
+          if (error) {
+            console.log(error)
+          } else {
+            console.log('Imagen eliminada')
+          }
+        }
+      )
+    }
+    return user
+  } catch (error) {
+    throw boom.internal('Internal error updating profile', error)
+  }
+}
+
 module.exports = {
   createUser,
   getUsers,
   getOneUser,
   deleteUser,
-  followPeople
+  followPeople,
+  upadateProfile
 }

@@ -6,16 +6,14 @@ const fs = require('fs')
 const response = require('../response')
 const router = express.Router()
 const Model = require('../models/users')
-const boom = require('@hapi/boom')
-const AuthModel = require('../models/auths')
 const {
   createUser,
   getUsers,
   getOneUser,
   deleteUser,
-  followPeople
+  followPeople,
+  upadateProfile
 } = require('../services/users')
-const { secret } = require('../config')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -69,7 +67,7 @@ router.delete('/:userId', async (req, res) => {
   try {
     const deletedUser = await deleteUser({ id })
     console.log(`User ${deletedUser._id} has been deleted`)
-    res.status(200).send('El usuario fue eliminado exitosamente')
+    response.success(req, res, 200, 'El usuario fue eliminado exitosamente')
   } catch (error) {
     response.error(req, res, 500, error.message)
   }
@@ -81,76 +79,13 @@ router.patch(
     { name: 'profilePhoto', maxCount: 1 },
     { name: 'coverPhoto', maxCount: 1 }
   ]),
-  async (req, res) => {
+  async (req, res, next) => {
     try {
-      const user = await Model.findById(req.params.userId)
-
-      if (user._id) {
-        const { files } = req
-        const { coverPhoto, profilePhoto } = files
-
-        if (req.body.name) {
-          user.name = req.body.name
-        }
-
-        if (req.body.description) {
-          user.description = req.body.description
-        }
-
-        if (profilePhoto) {
-          if (user.profilePhotoId) {
-            await cloudinary.v2.uploader.destroy(user.profilePhotoId)
-          }
-          const cloudUpload = await cloudinary.v2.uploader.upload(
-            `${__dirname}/../../uploads/${profilePhoto[0].filename}`
-          )
-
-          user.profilePhotoUrl = cloudUpload.url
-          user.profilePhotoId = cloudUpload.public_id
-        }
-
-        if (coverPhoto) {
-          if (user.coverPhotoId) {
-            await cloudinary.v2.uploader.destroy(user.coverPhotoId)
-          }
-          const cloudUpload = await cloudinary.v2.uploader.upload(
-            `${__dirname}/../../uploads/${coverPhoto[0].filename}`
-          )
-          user.coverPhotoUrl = cloudUpload.url
-          user.coverPhotoId = cloudUpload.public_id
-        }
-
-        await user.save()
-
-        if (profilePhoto) {
-          fs.unlink(
-            `${__dirname}/../../uploads/${profilePhoto[0].filename}`,
-            (error) => {
-              if (error) {
-                console.log(error)
-              } else {
-                console.log('Imagen eliminada')
-              }
-            }
-          )
-        }
-
-        if (coverPhoto) {
-          fs.unlink(
-            `${__dirname}/../../uploads/${coverPhoto[0].filename}`,
-            (error) => {
-              if (error) {
-                console.log(error)
-              } else {
-                console.log('Imagen eliminada')
-              }
-            }
-          )
-        }
-        res.status(200).send(user)
-      } else {
-        res.status(500).send('No se encontró usuario con ese id')
-      }
+      const { params, body, files } = req
+      const { userId } = params
+      const { name, description } = body
+      const user = await upadateProfile({ userId, name, description, files })
+      response.success(req, res, 200, user)
     } catch (error) {
       response.error(req, res, 500, error.message)
     }
