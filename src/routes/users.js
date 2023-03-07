@@ -12,7 +12,8 @@ const {
   createUser,
   getUsers,
   getOneUser,
-  deleteUser
+  deleteUser,
+  followPeople
 } = require('../services/users')
 const { secret } = require('../config')
 
@@ -156,32 +157,15 @@ router.patch(
   }
 )
 
-router.patch('/', async (req, res) => {
+router.patch('/', async (req, res, next) => {
+  //Follow or unfollow
+  const { body } = req
+  const { userId, toFollow } = body
   try {
-    if (req.body.userId && req.body.toFollow) {
-      const user = await Model.findById(req.body.userId)
-      const validationUser = user.followedPeople.find(
-        (el) => el.toString() === req.body.toFollow
-      )
-      if (!validationUser) {
-        //Follow
-        user.followedPeople.push(req.body.toFollow)
-        user.save()
-        response.success(req, res, 200, user.followedPeople)
-      } else {
-        //unfollow
-        const newFollowed = user.followedPeople.filter(
-          (el) => el.toString() !== req.body.toFollow
-        )
-        user.followedPeople = newFollowed
-        user.save()
-        response.success(req, res, 200, user.followedPeople)
-      }
-    } else {
-      response.error(req, res, 500, 'No id sended')
-    }
+    const followedPeople = await followPeople({ userId, toFollow })
+    response.success(req, res, 200, followedPeople)
   } catch (error) {
-    response.error(req, res, 500, error.message)
+    next(error)
   }
 })
 

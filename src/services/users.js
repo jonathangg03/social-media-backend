@@ -133,9 +133,48 @@ const deleteUser = async ({ id }) => {
   }
 }
 
+const followValidation = ({ userId, toFollow }) => {
+  if (!userId) {
+    throw boom.badData('No user that follow was sended')
+  }
+
+  if (!toFollow) {
+    throw boom.badData('No followed user was sended')
+  }
+}
+
+const followPeople = async ({ userId, toFollow }) => {
+  followValidation({ userId, toFollow })
+  try {
+    //Add userId to the array that is following to a person
+    const user = await UserModel.findById(userId)
+    const validatedUser = user.followedPeople.find(
+      (el) => el.toString() === toFollow
+    )
+    if (!validatedUser) {
+      //if the person to follow is not on the followedPople list
+      //Follow
+      user.followedPeople.push(toFollow) //we add him
+      user.save()
+      return user.followedPeople
+    } else {
+      //it him is not on the list, unfollow
+      const newFollowed = user.followedPeople.filter(
+        (el) => el.toString() !== toFollow
+      )
+      user.followedPeople = newFollowed
+      user.save()
+      return user.followedPeople
+    }
+  } catch (error) {
+    throw boom.internal('Internal error following people', error)
+  }
+}
+
 module.exports = {
   createUser,
   getUsers,
   getOneUser,
-  deleteUser
+  deleteUser,
+  followPeople
 }
