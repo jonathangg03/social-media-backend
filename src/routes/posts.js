@@ -7,6 +7,7 @@ const router = express.Router()
 const Model = require('../models/posts')
 const UserModel = require('../models/users')
 const response = require('../response')
+const { getPost } = require('../services/posts')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -18,29 +19,13 @@ const storage = multer.diskStorage({
 const upload = multer({ storage })
 
 //Traemos un post por medio de ID de usuario, para poder devolverlo al loguearnos
-router.get('/:id', async (req, res) => {
+router.get('/:userId', async (req, res) => {
   try {
-    if (!req.params.id) {
-      res.status(500).send('No se ingresó un id')
-    } else {
-      if (!req.query.getLiked) {
-        const userPost = await Model.find({
-          user: req.params.id
-        })
-          .populate('user')
-          .sort({ date: -1 })
-        response.success(req, res, 200, userPost)
-      } else {
-        const post = await Model.find().populate('user').sort({ date: -1 })
-        const user = await UserModel.findById(req.params.id)
-        const finalPost = post.filter((posted) => {
-          if (user.likedPost.includes(posted._id.toString())) {
-            return posted
-          }
-        })
-        response.success(req, res, 200, finalPost)
-      }
-    }
+    const { query, params } = req
+    const { userId } = params
+    const { getLiked } = query
+    const post = await getPost({ userId, getLiked })
+    response.success(req, res, 200, post)
   } catch (error) {
     response.error(req, res, 500, error.message)
   }
