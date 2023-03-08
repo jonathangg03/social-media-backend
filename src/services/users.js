@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken')
 const boom = require('@hapi/boom')
 const AuthModel = require('../models/auths')
 const UserModel = require('../models/users')
+const cloudinary = require('cloudinary')
+const fs = require('fs')
 
 const validate = async ({ name, email, password }) => {
   if (!email) {

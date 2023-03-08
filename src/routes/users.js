@@ -1,11 +1,8 @@
 const express = require('express')
 const multer = require('multer')
-const cloudinary = require('cloudinary')
 const path = require('path')
-const fs = require('fs')
 const response = require('../response')
 const router = express.Router()
-const Model = require('../models/users')
 const {
   createUser,
   getUsers,
@@ -87,7 +84,7 @@ router.patch(
       const user = await upadateProfile({ userId, name, description, files })
       response.success(req, res, 200, user)
     } catch (error) {
-      response.error(req, res, 500, error.message)
+      next(error)
     }
   }
 )
