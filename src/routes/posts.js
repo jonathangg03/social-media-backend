@@ -7,7 +7,11 @@ const router = express.Router()
 const Model = require('../models/posts')
 const UserModel = require('../models/users')
 const response = require('../response')
-const { getPost, getFollowedPeoplePosts } = require('../services/posts')
+const {
+  getPost,
+  getFollowedPeoplePosts,
+  createPost
+} = require('../services/posts')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -31,7 +35,7 @@ router.get('/:userId', async (req, res) => {
   }
 })
 
-//Get ideas of followed people
+//Get posts of followed people
 router.get('/', async (req, res, next) => {
   const { query } = req
   const { userId } = query
@@ -46,39 +50,13 @@ router.get('/', async (req, res, next) => {
 })
 
 //Enviamos un elemento a posts
-router.post('/:id', upload.single('postImage'), async (req, res) => {
+router.post('/:userId', upload.single('postImage'), async (req, res) => {
+  const { params, file, body } = req
+  const { userId } = params
+  const { content } = body
   try {
-    if (!req.params.id) {
-      throw Error('No se ingresó id')
-    } else {
-      let imageUrl = ''
-      let imageId = ''
-      if (req.file) {
-        const fileDirection = `${__dirname}/../../uploads/${req.file.filename}`
-        const cloudUpload = await cloudinary.v2.uploader.upload(fileDirection)
-        imageUrl = cloudUpload.url
-        imageId = cloudUpload.public_id
-
-        fs.unlink(fileDirection, (error) => {
-          if (error) {
-            console.log(error)
-          } else {
-            console.log('Image of post deleted from server')
-          }
-        })
-      }
-
-      const newPost = new Model({
-        content: req.body.content,
-        imageUrl: imageUrl,
-        imageId: imageId,
-        likes: [],
-        user: req.params.id,
-        date: Date.now()
-      })
-      await newPost.save()
-      response.success(req, res, 201, newPost)
-    }
+    const createdPost = await createPost({ userId, file, content })
+    response.success(req, res, 201, createdPost) //Need to be tried
   } catch (error) {
     response.error(req, res, 500, error.message)
   }
