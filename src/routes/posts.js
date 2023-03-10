@@ -7,7 +7,7 @@ const router = express.Router()
 const Model = require('../models/posts')
 const UserModel = require('../models/users')
 const response = require('../response')
-const { getPost } = require('../services/posts')
+const { getPost, getFollowedPeoplePosts } = require('../services/posts')
 
 const storage = multer.diskStorage({
   destination: 'uploads',
@@ -32,24 +32,16 @@ router.get('/:userId', async (req, res) => {
 })
 
 //Get ideas of followed people
-router.get('/', async (req, res) => {
+router.get('/', async (req, res, next) => {
+  const { query } = req
+  const { userId } = query
+
   try {
-    if (!req.query.userId) {
-      res.status(500).send('No se ingresó un id')
-    } else {
-      const userPost = await Model.find().populate('user').sort({ date: -1 })
-      const user = await UserModel.findById(req.query.userId)
-
-      const postToShow = userPost.filter((post) => {
-        if (user.followedPeople.includes(post.user._id)) {
-          return post
-        }
-      })
-
-      response.success(req, res, 200, postToShow)
-    }
+    console.log(userId)
+    const posts = await getFollowedPeoplePosts({ userId })
+    response.success(req, res, 200, posts)
   } catch (error) {
-    response.error(req, res, 500, error.message)
+    next(error)
   }
 })
 

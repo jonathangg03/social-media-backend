@@ -26,6 +26,23 @@ const getPost = async ({ userId, getLiked }) => {
   }
 }
 
+const getFollowedPeoplePosts = async ({ userId }) => {
+  if (!userId) {
+    throw boom.badData('User not specified')
+  } else {
+    const userPost = await PostModel.find().populate('user').sort({ date: -1 })
+    const user = await UserModel.findById(userId)
+
+    const postToShow = userPost.filter((post) => {
+      if (user.followedPeople.includes(post.user._id)) {
+        return post
+      }
+    })
+    return postToShow
+  }
+}
+
 module.exports = {
-  getPost
+  getPost,
+  getFollowedPeoplePosts
 }
