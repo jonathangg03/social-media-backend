@@ -40,7 +40,6 @@ router.get('/', async (req, res, next) => {
       ? req.headers.authorization
       : null
     const nameQuery = req.query.name ? req.query.name : null
-    console.log(req.params)
     const getAllUsers = req.query.getAllUsers ? true : false
     const users = await getUsers({ authHeader, nameQuery, getAllUsers })
     response.success(req, res, 200, users)
@@ -63,7 +62,6 @@ router.delete('/:userId', async (req, res) => {
   const id = req.params.userId
   try {
     const deletedUser = await deleteUser({ id })
-    console.log(`User ${deletedUser._id} has been deleted`)
     response.success(req, res, 200, 'El usuario fue eliminado exitosamente')
   } catch (error) {
     response.error(req, res, 500, error.message)

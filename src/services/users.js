@@ -129,6 +129,7 @@ const deleteUser = async ({ id }) => {
     await AuthModel.deleteOne({
       user: id
     })
+    console.log(`User ${deletedUser._id} has been deleted`)
     return deletedUser
   } catch (error) {
     throw boom.internal('Internal error deleting user')
@@ -218,7 +219,7 @@ const upadateProfile = async ({ userId, name, description, files }) => {
           if (error) {
             console.log(error)
           } else {
-            console.log('Imagen eliminada')
+            console.log('Delete image successfully')
           }
         }
       )
@@ -231,7 +232,7 @@ const upadateProfile = async ({ userId, name, description, files }) => {
           if (error) {
             console.log(error)
           } else {
-            console.log('Imagen eliminada')
+            console.log('Delete image successfully')
           }
         }
       )

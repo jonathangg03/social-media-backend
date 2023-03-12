@@ -43,38 +43,34 @@ const getFollowedPeoplePosts = async ({ userId }) => {
 }
 
 const createPost = async ({ userId, file, content }) => {
-  if (!userId) {
-    throw boom.internal('No user was specified')
-  } else {
-    let imageUrl = ''
-    let imageId = ''
-    if (file) {
-      const { filename } = file
-      const fileDirection = `${__dirname}/../../uploads/${filename}`
-      const cloudUpload = await cloudinary.v2.uploader.upload(fileDirection)
-      imageUrl = cloudUpload.url
-      imageId = cloudUpload.public_id
+  let imageUrl = ''
+  let imageId = ''
+  if (file) {
+    const { filename } = file
+    const fileDirection = `${__dirname}/../../uploads/${filename}`
+    const cloudUpload = await cloudinary.v2.uploader.upload(fileDirection)
+    imageUrl = cloudUpload.url
+    imageId = cloudUpload.public_id
 
-      fs.unlink(fileDirection, (error) => {
-        if (error) {
-          throw boom.internal('FS error deleting image from the server', error)
-        } else {
-          console.log('Post image deleted from server')
-        }
-      })
-    }
-
-    const newPost = new PostModel({
-      content: content,
-      imageUrl: imageUrl,
-      imageId: imageId,
-      likes: [],
-      user: userId,
-      date: Date.now()
+    fs.unlink(fileDirection, (error) => {
+      if (error) {
+        throw boom.internal('FS error deleting image from the server', error)
+      } else {
+        console.log('Post image deleted from server')
+      }
     })
-    await newPost.save()
-    return newPost
   }
+
+  const newPost = new PostModel({
+    content: content,
+    imageUrl: imageUrl,
+    imageId: imageId,
+    likes: [],
+    user: userId,
+    date: Date.now()
+  })
+  await newPost.save()
+  return newPost
 }
 
 module.exports = {

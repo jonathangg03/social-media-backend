@@ -41,7 +41,6 @@ router.get('/', async (req, res, next) => {
   const { userId } = query
 
   try {
-    console.log(userId)
     const posts = await getFollowedPeoplePosts({ userId })
     response.success(req, res, 200, posts)
   } catch (error) {
