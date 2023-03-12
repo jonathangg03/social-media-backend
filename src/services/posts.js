@@ -73,8 +73,39 @@ const createPost = async ({ userId, file, content }) => {
   return newPost
 }
 
+const updatePost = async ({ postId, userId }) => {
+  if (!userId) {
+    throw boom.badData('User was not sended')
+  }
+  const post = await PostModel.findById(postId)
+  const user = await UserModel.findById(userId)
+  if (post.likes.includes(userId)) {
+    //Delete like
+    const newArray = post.likes.filter((like) => like !== userId)
+    const newLikedPost = user.likedPost.filter(
+      (postLiked) => post._id.toString() !== postLiked
+    )
+    post.likes = newArray
+    user.likedPost = newLikedPost
+  } else {
+    //Add like
+    post.likes.push(userId)
+    user.likedPost.push(postId)
+  }
+  await post.save()
+  await user.save()
+  return post
+}
+
+const deletePost = async ({ postId }) => {
+  const post = await PostModel.findByIdAndRemove(postId)
+  return post
+}
+
 module.exports = {
   getPost,
   getFollowedPeoplePosts,
-  createPost
+  createPost,
+  updatePost,
+  deletePost
 }

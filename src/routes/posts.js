@@ -10,7 +10,9 @@ const response = require('../response')
 const {
   getPost,
   getFollowedPeoplePosts,
-  createPost
+  createPost,
+  updatePost,
+  deletePost
 } = require('../services/posts')
 
 const storage = multer.diskStorage({
@@ -61,41 +63,28 @@ router.post('/:userId', upload.single('postImage'), async (req, res) => {
   }
 })
 
-router.patch('/:postId', upload.single('postImage'), async (req, res) => {
+router.patch('/:postId', upload.single('postImage'), async (req, res, next) => {
+  //Give a like
+  const { query, params } = req
+  const { postId } = params
+  const { userId } = query
   try {
-    if (!req.query.user) {
-      throw Error('No se ingresó id')
-    } else {
-      const post = await Model.findById(req.params.postId)
-      const user = await UserModel.findById(req.query.user)
-      if (post.likes.includes(req.query.user)) {
-        //Delete like
-        const newArray = post.likes.filter((like) => like !== req.query.user)
-        const newLikedPost = user.likedPost.filter(
-          (postLiked) => post._id.toString() !== postLiked
-        )
-        post.likes = newArray
-        user.likedPost = newLikedPost
-      } else {
-        //Add like
-        post.likes.push(req.query.user)
-        user.likedPost.push(req.params.postId)
-      }
-      await post.save()
-      await user.save()
-      res.status(201).send(post)
-    }
+    const post = await updatePost({ postId, userId })
+    response.success(req, res, 200, post)
   } catch (error) {
-    res.status(500).send(error.message)
+    next(error)
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:postId', async (req, res) => {
   try {
-    await Model.findByIdAndRemove(req.params.id)
+    const { params } = req
+    const { postId } = params
+    const deletedPost = await deletePost({ postId })
+    console.log(`Post with ID ${deletedPost._id} was deleted`)
     response.success(req, res, 200, 'Se eliminó el registro correctamente')
   } catch (error) {
-    response.error(req, res, 500, 'No se pudo eliminar el registro')
+    response.error(req, res, 500, 'No se pudo eliminar el registro', error)
   }
 })
 
